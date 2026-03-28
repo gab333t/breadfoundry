@@ -32,25 +32,43 @@
     ];
 
     const NUM = models.length;
-    const RADIUS = 280;
-    const ORBIT_SPEED = 0.003;
-
     const CAM_DEFAULT = 3;
     const CAM_HOVER   = 2.6;
     const CAM_LERP    = 0.08;
 
     let orbitAngle = 0;
+    let scrollVelocity = 0;
+    const SCROLL_SENSITIVITY = 0.0008;
+    const SCROLL_DAMPING = 0.92;
+
     const containers = [];
+
+    function getRadius() {
+        return window.innerWidth * 0.18;
+    }
+
+    function getContainerSize() {
+        return window.innerWidth * 0.19;
+    }
 
     function getCirclePositions(angle) {
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
+        const RADIUS = getRadius();
         return models.map((_, i) => {
             const a = angle + (i / NUM) * Math.PI * 2;
             return {
                 x: cx + RADIUS * Math.cos(a),
                 y: cy + RADIUS * Math.sin(a),
             };
+        });
+    }
+
+    function updateContainerSizes() {
+        const size = getContainerSize();
+        document.querySelectorAll('.model-canvas-wrapper').forEach(el => {
+            el.style.width  = size + 'px';
+            el.style.height = size + 'px';
         });
     }
 
@@ -61,6 +79,25 @@
             el.style.top  = positions[i].y + 'px';
         });
     }
+
+    window.addEventListener('wheel', (e) => {
+        scrollVelocity += e.deltaY * SCROLL_SENSITIVITY;
+    }, { passive: true });
+
+    let lastTouchY = null;
+    window.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) lastTouchY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && lastTouchY !== null) {
+            const delta = lastTouchY - e.touches[0].clientY;
+            scrollVelocity += delta * SCROLL_SENSITIVITY;
+            lastTouchY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => { lastTouchY = null; }, { passive: true });
 
     function createViewer(containerId, modelPath) {
         const container = document.getElementById(containerId);
@@ -108,7 +145,7 @@
             dragVelocity = 0;
         });
 
-        renderer.domElement.addEventListener('mousemove', (e) => {
+        window.addEventListener('mousemove', (e) => {
             if (!isDragging || !model) return;
             const delta = e.clientX - prevMouseX;
             model.rotation.z -= delta * 0.01;
@@ -124,13 +161,15 @@
         });
 
         renderer.domElement.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            autoSpin = false;
-            prevMouseX = e.touches[0].clientX;
-            dragVelocity = 0;
+            if (e.touches.length === 1) {
+                isDragging = true;
+                autoSpin = false;
+                prevMouseX = e.touches[0].clientX;
+                dragVelocity = 0;
+            }
         });
 
-        renderer.domElement.addEventListener('touchmove', (e) => {
+        window.addEventListener('touchmove', (e) => {
             if (!isDragging || !model) return;
             const delta = e.touches[0].clientX - prevMouseX;
             model.rotation.z -= delta * 0.01;
@@ -185,7 +224,7 @@
 
             if (model) {
                 if (autoSpin) {
-                    model.rotation.z += 0.005;
+                    model.rotation.z += 0.008;
                     dragVelocity = 0;
                 } else if (!isDragging && Math.abs(dragVelocity) > 0.0001) {
                     model.rotation.z -= dragVelocity;
@@ -198,16 +237,22 @@
         animate();
     }
 
+    updateContainerSizes();
     updateContainerPositions();
     models.forEach((path, i) => createViewer(`container-${i}`, path));
 
     function orbitLoop() {
         requestAnimationFrame(orbitLoop);
-        orbitAngle += ORBIT_SPEED;
+        orbitAngle += scrollVelocity;
+        scrollVelocity *= SCROLL_DAMPING;
+        if (Math.abs(scrollVelocity) < 0.00001) scrollVelocity = 0;
         updateContainerPositions();
     }
     orbitLoop();
 
-    window.addEventListener('resize', updateContainerPositions);
+    window.addEventListener('resize', () => {
+        updateContainerSizes();
+        updateContainerPositions();
+    });
 </script>
 </html>

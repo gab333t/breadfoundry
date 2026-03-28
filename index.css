@@ -1,30 +1,48 @@
 @font-face {
   font-family: Corpulent;
-  src: url(font/CorpulentTRIAL-Regular.woff2); 
+  src: url(font/CorpulentTRIAL-Regular.woff2);
 }
+
 body {
   background-color: white;
   margin: 0;
   overflow: hidden;
 }
+
+p {
+  font-family: Corpulent;
+  font-size: 2vw;
+  color: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0.5em 1em;
+  text-align: justify;
+  text-align-last: justify;
+  box-sizing: border-box;
+  z-index: 10;
+  pointer-events: none;
+}
+
 #models-container {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
+  pointer-events: none;
 }
+
 .model-canvas-wrapper {
   position: absolute;
-  width: 280px;
-  height: 280px;
   transform: translate(-50%, -50%);
+  pointer-events: all;
 }
+
 .model-canvas-wrapper canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
-}
-p {
-  font-family: Corpulent;
-  font-size: 2vw;
-  color: rgb(73, 24, 7);
 }
