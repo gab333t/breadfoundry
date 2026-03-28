@@ -4,7 +4,7 @@
 }
 
 body {
-  background-color: white;
+  background-color: rgb(255, 247, 235);
   margin: 0;
   overflow: hidden;
 }
@@ -12,7 +12,7 @@ body {
 p {
   font-family: Corpulent;
   font-size: 2vw;
-  color: black;
+  color: rgb(26, 16, 2);
   position: fixed;
   top: 0;
   left: 0;
