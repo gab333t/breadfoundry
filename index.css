@@ -1,0 +1,30 @@
+@font-face {
+  font-family: Corpulent;
+  src: url(font/CorpulentTRIAL-Regular.woff2); 
+}
+body {
+  background-color: white;
+  margin: 0;
+  overflow: hidden;
+}
+#models-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+.model-canvas-wrapper {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  transform: translate(-50%, -50%);
+}
+.model-canvas-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+p {
+  font-family: Corpulent;
+  font-size: 2vw;
+  color: rgb(73, 24, 7);
+}
