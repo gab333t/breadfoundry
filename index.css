@@ -3,6 +3,16 @@
   src: url(font/CorpulentTRIAL-Regular.woff2);
 }
 
+@font-face {
+  font-family: FindReplace-Medium;
+  src: url(font/TRIALFindReplace-Medium.otf);
+}
+
+@font-face {
+  font-family: FindReplace-Bold;
+  src: url(font/TRIALFindReplace-Bold.otf);
+}
+
 body {
   background-color: rgb(255, 247, 235);
   margin: 0;
@@ -45,4 +55,25 @@ p {
   width: 100% !important;
   height: 100% !important;
   display: block;
+}
+
+.model-canvas-wrapper:hover {
+  cursor: pointer;
+}
+
+#bread-label {
+  font-family: FindReplace-Bold;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2vw;
+  color: rgb(26, 16, 2);
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+}
+
+#bread-label.visible {
+  opacity: 1;
 }

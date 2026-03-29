@@ -8,7 +8,8 @@
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
 </head>
 <body>
-    <p>The Bread Foundry</p>
+    <p>Bread Foundry</p>
+    <div id="bread-label"></div>
     <div id="models-container">
         <div class="model-canvas-wrapper" id="container-0"></div>
         <div class="model-canvas-wrapper" id="container-1"></div>
@@ -21,14 +22,24 @@
 <script type="module">
     import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
     import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
+    import { DRACOLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/DRACOLoader.js";
 
     const models = [
-        './img/Marble.glb',
-        './img/Multigrain.glb',
-        './img/Pumpernickel.glb',
-        './img/White.glb',
-        './img/Pita.glb',
-        './img/Rye.glb',
+        './img/Marble_C.glb',
+        './img/Multigrain_C.glb',
+        './img/Pumpernickel_C.glb',
+        './img/White_C.glb',
+        './img/Pita_C.glb',
+        './img/Rye_C.glb',
+    ];
+
+    const labels = [
+        'MARBLE',
+        'MULTIGRAIN',
+        'PUMPERNICKEL',
+        'WHITE',
+        'PITA',
+        'RYE',
     ];
 
     const NUM = models.length;
@@ -42,6 +53,13 @@
     const SCROLL_DAMPING = 0.92;
 
     const containers = [];
+    const breadLabel = document.getElementById('bread-label');
+
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
 
     function getRadius() {
         return window.innerWidth * 0.18;
@@ -99,147 +117,170 @@
 
     window.addEventListener('touchend', () => { lastTouchY = null; }, { passive: true });
 
-    function createViewer(containerId, modelPath) {
-        const container = document.getElementById(containerId);
-        containers.push(container);
+    function createViewer(containerId, modelPath, labelText) {
+        return new Promise((resolve) => {
+            const container = document.getElementById(containerId);
+            containers.push(container);
 
-        const width  = container.clientWidth;
-        const height = container.clientHeight;
+            const width  = container.clientWidth;
+            const height = container.clientHeight;
 
-        const scene  = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-        camera.position.z = CAM_DEFAULT;
+            const scene  = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            camera.position.z = CAM_DEFAULT;
 
-        let camTarget = CAM_DEFAULT;
+            let camTarget = CAM_DEFAULT;
 
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.0;
-        container.appendChild(renderer.domElement);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            container.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
-        scene.add(ambientLight);
-        const light1 = new THREE.DirectionalLight(0xffffff, 0.6);
-        light1.position.set(5, 5, 5);
-        scene.add(light1);
-        const light2 = new THREE.DirectionalLight(0xffffff, 0.6);
-        light2.position.set(-5, 5, -5);
-        scene.add(light2);
-        const light3 = new THREE.DirectionalLight(0xffffff, 0.4);
-        light3.position.set(0, -5, 0);
-        scene.add(light3);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
+            scene.add(ambientLight);
+            const light1 = new THREE.DirectionalLight(0xffffff, 0.6);
+            light1.position.set(5, 5, 5);
+            scene.add(light1);
+            const light2 = new THREE.DirectionalLight(0xffffff, 0.6);
+            light2.position.set(-5, 5, -5);
+            scene.add(light2);
+            const light3 = new THREE.DirectionalLight(0xffffff, 0.4);
+            light3.position.set(0, -5, 0);
+            scene.add(light3);
 
-        let model = null;
-        let isDragging = false;
-        let prevMouseX = 0;
-        let dragVelocity = 0;
-        let autoSpin = true;
+            let model = null;
+            let isDragging = false;
+            let prevMouseX = 0;
+            let dragVelocity = 0;
+            let autoSpin = true;
 
-        renderer.domElement.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            autoSpin = false;
-            prevMouseX = e.clientX;
-            dragVelocity = 0;
-        });
-
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging || !model) return;
-            const delta = e.clientX - prevMouseX;
-            model.rotation.z -= delta * 0.01;
-            dragVelocity = delta * 0.01;
-            prevMouseX = e.clientX;
-        });
-
-        window.addEventListener('mouseup', () => {
-            if (isDragging) {
-                isDragging = false;
-                setTimeout(() => { autoSpin = true; }, 800);
-            }
-        });
-
-        renderer.domElement.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) {
+            renderer.domElement.addEventListener('mousedown', (e) => {
                 isDragging = true;
                 autoSpin = false;
-                prevMouseX = e.touches[0].clientX;
+                prevMouseX = e.clientX;
                 dragVelocity = 0;
-            }
-        });
+                container.style.cursor = 'grabbing';
+            });
 
-        window.addEventListener('touchmove', (e) => {
-            if (!isDragging || !model) return;
-            const delta = e.touches[0].clientX - prevMouseX;
-            model.rotation.z -= delta * 0.01;
-            dragVelocity = delta * 0.01;
-            prevMouseX = e.touches[0].clientX;
-        });
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging || !model) return;
+                const delta = e.clientX - prevMouseX;
+                model.rotation.z -= delta * 0.01;
+                dragVelocity = delta * 0.01;
+                prevMouseX = e.clientX;
+            });
 
-        window.addEventListener('touchend', () => {
-            if (isDragging) {
-                isDragging = false;
-                setTimeout(() => { autoSpin = true; }, 800);
-            }
-        });
-
-        container.addEventListener('mouseenter', () => { camTarget = CAM_HOVER; });
-        container.addEventListener('mouseleave', () => { camTarget = CAM_DEFAULT; });
-
-        const loader = new GLTFLoader();
-        loader.load(
-            modelPath,
-            function (gltf) {
-                model = gltf.scene;
-
-                const box    = new THREE.Box3().setFromObject(model);
-                const center = box.getCenter(new THREE.Vector3());
-                const size   = box.getSize(new THREE.Vector3());
-                const maxDim = Math.max(size.x, size.y, size.z);
-                const scale  = 1.5 / maxDim;
-
-                model.position.sub(center.multiplyScalar(scale));
-                model.scale.setScalar(scale);
-                model.rotation.x = Math.PI / 2;
-
-                scene.add(model);
-            },
-            xhr   => console.log(modelPath + ': ' + (xhr.loaded / xhr.total * 100).toFixed(1) + '% loaded'),
-            error => console.error('Error loading ' + modelPath, error)
-        );
-
-        window.addEventListener("resize", () => {
-            const w = container.clientWidth;
-            const h = container.clientHeight;
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
-        });
-
-        function animate() {
-            requestAnimationFrame(animate);
-
-            camera.position.z += (camTarget - camera.position.z) * CAM_LERP;
-
-            if (model) {
-                if (autoSpin) {
-                    model.rotation.z += 0.008;
-                    dragVelocity = 0;
-                } else if (!isDragging && Math.abs(dragVelocity) > 0.0001) {
-                    model.rotation.z -= dragVelocity;
-                    dragVelocity *= 0.92;
+            window.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    container.style.cursor = 'grab';
+                    setTimeout(() => { autoSpin = true; }, 800);
                 }
-            }
+            });
 
-            renderer.render(scene, camera);
-        }
-        animate();
+            renderer.domElement.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    autoSpin = false;
+                    prevMouseX = e.touches[0].clientX;
+                    dragVelocity = 0;
+                }
+            });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!isDragging || !model) return;
+                const delta = e.touches[0].clientX - prevMouseX;
+                model.rotation.z -= delta * 0.01;
+                dragVelocity = delta * 0.01;
+                prevMouseX = e.touches[0].clientX;
+            });
+
+            window.addEventListener('touchend', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    setTimeout(() => { autoSpin = true; }, 800);
+                }
+            });
+
+            container.addEventListener('mouseenter', () => {
+                camTarget = CAM_HOVER;
+                breadLabel.textContent = labelText;
+                breadLabel.classList.add('visible');
+                container.style.cursor = 'grab';
+            });
+
+            container.addEventListener('mouseleave', () => {
+                camTarget = CAM_DEFAULT;
+                breadLabel.classList.remove('visible');
+                container.style.cursor = 'default';
+            });
+
+            loader.load(
+                modelPath,
+                function (gltf) {
+                    model = gltf.scene;
+
+                    const box    = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size   = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale  = 1.5 / maxDim;
+
+                    model.position.sub(center.multiplyScalar(scale));
+                    model.scale.setScalar(scale);
+                    model.rotation.x = Math.PI / 2;
+
+                    scene.add(model);
+                    resolve();
+                },
+                undefined,
+                (error) => {
+                    console.error('Error loading ' + modelPath, error);
+                    resolve();
+                }
+            );
+
+            window.addEventListener("resize", () => {
+                const w = container.clientWidth;
+                const h = container.clientHeight;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                camera.position.z += (camTarget - camera.position.z) * CAM_LERP;
+
+                if (model) {
+                    if (autoSpin) {
+                        model.rotation.z += 0.008;
+                        dragVelocity = 0;
+                    } else if (!isDragging && Math.abs(dragVelocity) > 0.0001) {
+                        model.rotation.z -= dragVelocity;
+                        dragVelocity *= 0.92;
+                    }
+                }
+
+                renderer.render(scene, camera);
+            }
+            animate();
+        });
     }
 
-    updateContainerSizes();
-    updateContainerPositions();
-    models.forEach((path, i) => createViewer(`container-${i}`, path));
+    async function loadSequential() {
+        updateContainerSizes();
+        updateContainerPositions();
+        for (let i = 0; i < models.length; i++) {
+            await createViewer(`container-${i}`, models[i], labels[i]);
+        }
+    }
+
+    loadSequential();
 
     function orbitLoop() {
         requestAnimationFrame(orbitLoop);
