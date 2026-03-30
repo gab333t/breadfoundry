@@ -1,9 +1,4 @@
 @font-face {
-  font-family: Corpulent;
-  src: url(font/CorpulentTRIAL-Regular.woff2);
-}
-
-@font-face {
   font-family: FindReplace-Medium;
   src: url(font/TRIALFindReplace-Medium.otf);
 }
@@ -38,7 +33,7 @@ p {
   text-align: justify;
   text-align-last: justify;
   box-sizing: border-box;
-  z-index: 10;
+  z-index: 200;
   pointer-events: none;
 }
 
@@ -102,11 +97,11 @@ p {
 
 #detail-canvas-container {
   position: absolute;
-  top: 50%;
+  top: 47%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 70vmin;
-  height: 70vmin;
+  width: 82vmin;
+  height: 82vmin;
 }
 
 #detail-canvas-container canvas {
@@ -123,16 +118,21 @@ p {
 #back-button {
   font-family: FindReplace-Bold;
   position: fixed;
-  bottom: 2em;
-  left: 2em;
+  bottom: 0;
+  left: 0;
   font-size: 2vw;
+  letter-spacing: -0.1vw;
   color: rgb(26, 16, 2);
   background: none;
   border: none;
-  padding: 0;
+  padding: 0.5em 1em;
   cursor: pointer;
   z-index: 110;
   display: none;
+}
+
+#back-button:hover {
+  font-family: FindReplace-Black;
 }
 
 #back-button.active {
@@ -142,19 +142,46 @@ p {
 #detail-label {
   font-family: FindReplace-Bold;
   position: fixed;
-  top: 50%;
+  bottom: 0;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   font-size: 2vw;
   letter-spacing: -0.1vw;
   color: rgb(26, 16, 2);
   pointer-events: none;
   z-index: 110;
   display: none;
-  margin-top: 38vmin;
+  padding: 0.5em 1em;
+  padding-bottom: calc(0.5em + 2vw + 0.5em);
+  white-space: nowrap;
 }
 
 #detail-label.active {
+  display: block;
+}
+
+#detail-question {
+  font-family: FindReplace-Bold;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2vw;
+  letter-spacing: -0.1vw;
+  color: rgb(26, 16, 2);
+  pointer-events: all;
+  cursor: pointer;
+  z-index: 110;
+  display: none;
+  padding: 0.5em 1em;
+  white-space: nowrap;
+}
+
+#detail-question:hover {
+  font-family: FindReplace-Black;
+}
+
+#detail-question.active {
   display: block;
 }
 
@@ -169,6 +196,9 @@ p {
     font-size: 5vw;
   }
   #detail-label {
+    font-size: 5vw;
+  }
+  #detail-question {
     font-size: 5vw;
   }
 }

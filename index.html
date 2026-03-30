@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
 </head>
 <body>
-    <p>BREAD FOUNDRY</p>
+    <p id="header-text">BREAD FOUNDRY</p>
     <div id="bread-label"></div>
     <div id="models-container">
         <div class="model-canvas-wrapper" id="container-0"></div>
@@ -22,6 +22,7 @@
         <div id="detail-canvas-container"></div>
     </div>
     <div id="detail-label"></div>
+    <div id="detail-question">RECIPE</div>
     <button id="back-button">BACK</button>
 </body>
 <script type="module">
@@ -47,6 +48,15 @@
         'RYE',
     ];
 
+    const headerLabels = [
+        '01.  MARBLE',
+        '02.  MULTIGRAIN',
+        '03.  PUMPERNICKEL',
+        '04.  WHITE',
+        '05.  PITA',
+        '06.  RYE',
+    ];
+
     const NUM = models.length;
     const CAM_DEFAULT = 3;
     const CAM_HOVER   = 2.6;
@@ -59,10 +69,12 @@
     const SCROLL_DAMPING = 0.92;
 
     const containers = [];
+    const headerText = document.getElementById('header-text');
     const breadLabel = document.getElementById('bread-label');
     const detailView = document.getElementById('detail-view');
     const detailCanvasContainer = document.getElementById('detail-canvas-container');
     const detailLabel = document.getElementById('detail-label');
+    const detailQuestion = document.getElementById('detail-question');
     const backButton = document.getElementById('back-button');
 
     let globalDragging = false;
@@ -118,12 +130,12 @@
         });
     }
 
-    function openDetailView(modelPath, labelText) {
+    function openDetailView(modelPath, labelText, headerLabel) {
         inDetailView = true;
         detailView.classList.add('active');
         backButton.classList.add('active');
-        detailLabel.textContent = labelText;
-        detailLabel.classList.add('active');
+        detailQuestion.classList.add('active');
+        headerText.textContent = headerLabel;
         breadLabel.classList.remove('visible');
 
         detailVelX = 0;
@@ -196,7 +208,8 @@
         inDetailView = false;
         detailView.classList.remove('active');
         backButton.classList.remove('active');
-        detailLabel.classList.remove('active');
+        detailQuestion.classList.remove('active');
+        headerText.textContent = 'BREAD FOUNDRY';
         cancelAnimationFrame(detailAnimId);
         if (detailRenderer) {
             detailRenderer.dispose();
@@ -296,7 +309,7 @@
         lastTouchY = null;
     }, { passive: true });
 
-    function createViewer(containerId, modelPath, labelText) {
+    function createViewer(containerId, modelPath, labelText, headerLabel) {
         return new Promise((resolve) => {
             const container = document.getElementById(containerId);
             containers.push(container);
@@ -371,7 +384,7 @@
                 setTimeout(() => { autoSpin = true; }, 800);
 
                 if (!isDragging) {
-                    openDetailView(modelPath, labelText);
+                    openDetailView(modelPath, labelText, headerLabel);
                 } else {
                     breadLabel.classList.remove('visible');
                 }
@@ -411,7 +424,7 @@
                 setTimeout(() => { autoSpin = true; }, 800);
 
                 if (!isDragging) {
-                    openDetailView(modelPath, labelText);
+                    openDetailView(modelPath, labelText, headerLabel);
                 } else {
                     breadLabel.classList.remove('visible');
                 }
@@ -490,7 +503,7 @@
         updateContainerSizes();
         updateContainerPositions();
         for (let i = 0; i < models.length; i++) {
-            await createViewer(`container-${i}`, models[i], labels[i]);
+            await createViewer(`container-${i}`, models[i], labels[i], headerLabels[i]);
         }
     }
 
