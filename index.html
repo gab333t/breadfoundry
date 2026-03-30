@@ -8,7 +8,7 @@
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
 </head>
 <body>
-    <p>Bread Foundry</p>
+    <p>BREAD FOUNDRY</p>
     <div id="bread-label"></div>
     <div id="models-container">
         <div class="model-canvas-wrapper" id="container-0"></div>
@@ -51,6 +51,7 @@
     const CAM_DEFAULT = 3;
     const CAM_HOVER   = 2.6;
     const CAM_LERP    = 0.08;
+    const DETAIL_DAMPING = 0.92;
 
     let orbitAngle = 0;
     let scrollVelocity = 0;
@@ -72,6 +73,8 @@
     let detailIsDragging = false;
     let detailPrevMouseX = 0;
     let detailPrevMouseY = 0;
+    let detailVelX = 0;
+    let detailVelY = 0;
 
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
@@ -123,6 +126,9 @@
         detailLabel.classList.add('active');
         breadLabel.classList.remove('visible');
 
+        detailVelX = 0;
+        detailVelY = 0;
+
         detailCanvasContainer.innerHTML = '';
 
         const w = detailCanvasContainer.clientWidth;
@@ -173,8 +179,13 @@
 
         function animateDetail() {
             detailAnimId = requestAnimationFrame(animateDetail);
-            if (detailModel && !detailIsDragging) {
-                detailModel.rotation.z += 0.008;
+            if (!detailIsDragging && detailModel) {
+                if (Math.abs(detailVelX) > 0.0001 || Math.abs(detailVelY) > 0.0001) {
+                    detailModel.rotation.z -= detailVelX;
+                    detailModel.rotation.x += detailVelY;
+                    detailVelX *= DETAIL_DAMPING;
+                    detailVelY *= DETAIL_DAMPING;
+                }
             }
             detailRenderer.render(detailScene, detailCamera);
         }
@@ -192,29 +203,34 @@
             detailCanvasContainer.innerHTML = '';
         }
         detailModel = null;
+        detailVelX = 0;
+        detailVelY = 0;
     }
 
     function onDetailMouseDown(e) {
-        detailIsDragging = false;
+        detailIsDragging = true;
         detailPrevMouseX = e.clientX;
         detailPrevMouseY = e.clientY;
+        detailVelX = 0;
+        detailVelY = 0;
 
         function onMove(e) {
             const dx = e.clientX - detailPrevMouseX;
             const dy = e.clientY - detailPrevMouseY;
-            if (Math.abs(dx) > 2 || Math.abs(dy) > 2) detailIsDragging = true;
             if (detailModel) {
                 detailModel.rotation.z -= dx * 0.01;
                 detailModel.rotation.x += dy * 0.01;
             }
+            detailVelX = dx * 0.01;
+            detailVelY = dy * 0.01;
             detailPrevMouseX = e.clientX;
             detailPrevMouseY = e.clientY;
         }
 
         function onUp() {
+            detailIsDragging = false;
             window.removeEventListener('mousemove', onMove);
             window.removeEventListener('mouseup', onUp);
-            setTimeout(() => { detailIsDragging = false; }, 50);
         }
 
         window.addEventListener('mousemove', onMove);
@@ -223,27 +239,30 @@
 
     function onDetailTouchStart(e) {
         if (e.touches.length !== 1) return;
-        detailIsDragging = false;
+        detailIsDragging = true;
         detailPrevMouseX = e.touches[0].clientX;
         detailPrevMouseY = e.touches[0].clientY;
+        detailVelX = 0;
+        detailVelY = 0;
 
         function onMove(e) {
             if (e.touches.length !== 1) return;
             const dx = e.touches[0].clientX - detailPrevMouseX;
             const dy = e.touches[0].clientY - detailPrevMouseY;
-            if (Math.abs(dx) > 2 || Math.abs(dy) > 2) detailIsDragging = true;
             if (detailModel) {
                 detailModel.rotation.z -= dx * 0.01;
                 detailModel.rotation.x += dy * 0.01;
             }
+            detailVelX = dx * 0.01;
+            detailVelY = dy * 0.01;
             detailPrevMouseX = e.touches[0].clientX;
             detailPrevMouseY = e.touches[0].clientY;
         }
 
         function onEnd() {
+            detailIsDragging = false;
             window.removeEventListener('touchmove', onMove);
             window.removeEventListener('touchend', onEnd);
-            setTimeout(() => { detailIsDragging = false; }, 50);
         }
 
         window.addEventListener('touchmove', onMove, { passive: true });

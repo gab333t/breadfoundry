@@ -13,6 +13,11 @@
   src: url(font/TRIALFindReplace-Bold.otf);
 }
 
+@font-face {
+  font-family: FindReplace-Black;
+  src: url(font/TRIALFindReplace-Black.otf);
+}
+
 body {
   background-color: rgb(255, 247, 235);
   margin: 0;
@@ -20,8 +25,9 @@ body {
 }
 
 p {
-  font-family: Corpulent;
+  font-family: FindReplace-Bold;
   font-size: 2vw;
+  letter-spacing: -0.1vw;
   color: rgb(26, 16, 2);
   position: fixed;
   top: 0;
@@ -68,6 +74,7 @@ p {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 2vw;
+  letter-spacing: -0.1vw;
   color: rgb(26, 16, 2);
   pointer-events: none;
   z-index: 20;
@@ -139,6 +146,7 @@ p {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 2vw;
+  letter-spacing: -0.1vw;
   color: rgb(26, 16, 2);
   pointer-events: none;
   z-index: 110;
