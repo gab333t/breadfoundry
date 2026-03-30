@@ -30,7 +30,7 @@
     import * as THREE from "https://cdn.skypack.dev/three@0.129.0/build/three.module.js";
     import { GLTFLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
     import { DRACOLoader } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/loaders/DRACOLoader.js";
-
+ 
     const models = [
         './img/Marble_C.glb',
         './img/Multigrain_C.glb',
@@ -39,7 +39,7 @@
         './img/Pita_C.glb',
         './img/Rye_C.glb',
     ];
-
+ 
     const labels = [
         'MARBLE',
         'MULTIGRAIN',
@@ -48,7 +48,7 @@
         'PITA',
         'RYE',
     ];
-
+ 
     const headerLabels = [
         '01.  MARBLE',
         '02.  MULTIGRAIN',
@@ -57,7 +57,7 @@
         '05.  PITA',
         '06.  RYE',
     ];
-
+ 
     const recipes = {
         'MARBLE': {
             ingredients: ['2.25 TSP ACTIVE DRY YEAST', '1.5 CUPS WARM WATER', '3.5 CUPS BREAD FLOUR', '1.5 TSP SALT', '2 TBSP COCOA POWDER', '2 TBSP SUGAR'],
@@ -84,18 +84,18 @@
             method: 'COMBINE FLOURS AND CARAWAY. DISSOLVE YEAST IN WATER WITH MOLASSES. KNEAD 8 MIN — DOUGH IS STICKY, RESIST ADDING FLOUR. PROOF 1.5 HOURS, SHAPE, PROOF 1 HOUR. BAKE AT 375F FOR 35 MIN.',
         },
     };
-
+ 
     const NUM = models.length;
     const CAM_DEFAULT = 3;
     const CAM_HOVER   = 2.6;
     const CAM_LERP    = 0.08;
     const DETAIL_DAMPING = 0.92;
-
+ 
     let orbitAngle = 0;
     let scrollVelocity = 0;
     const SCROLL_SENSITIVITY = 0.0008;
     const SCROLL_DAMPING = 0.92;
-
+ 
     const containers = [];
     const headerText = document.getElementById('header-text');
     const breadLabel = document.getElementById('bread-label');
@@ -105,39 +105,39 @@
     const detailQuestion = document.getElementById('detail-question');
     const backButton = document.getElementById('back-button');
     const recipeOverlay = document.getElementById('recipe-overlay');
-
+ 
     let globalDragging = false;
     let draggedLabel = null;
     let inDetailView = false;
     let recipeOpen = false;
     let currentLabel = '';
-
+ 
     let detailScene, detailCamera, detailRenderer, detailModel, detailAnimId;
     let detailIsDragging = false;
     let detailPrevMouseX = 0;
     let detailPrevMouseY = 0;
     let detailVelX = 0;
     let detailVelY = 0;
-
+ 
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
-
+ 
     function getRadius() {
         if (window.innerWidth <= 768) {
             return window.innerWidth * 0.35;
         }
         return window.innerWidth * 0.18;
     }
-
+ 
     function getContainerSize() {
         if (window.innerWidth <= 768) {
             return window.innerWidth * 0.35;
         }
         return window.innerWidth * 0.19;
     }
-
+ 
     function getCirclePositions(angle) {
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
@@ -150,7 +150,7 @@
             };
         });
     }
-
+ 
     function updateContainerSizes() {
         const size = getContainerSize();
         document.querySelectorAll('.model-canvas-wrapper').forEach(el => {
@@ -158,7 +158,7 @@
             el.style.height = size + 'px';
         });
     }
-
+ 
     function updateContainerPositions() {
         const positions = getCirclePositions(orbitAngle);
         containers.forEach((el, i) => {
@@ -166,19 +166,20 @@
             el.style.top  = positions[i].y + 'px';
         });
     }
-
+ 
     function openRecipe(labelText) {
         const recipe = recipes[labelText];
         if (!recipe) return;
         recipeOpen = true;
         const ingredientLine = recipe.ingredients.join(',  ');
-        recipeOverlay.innerHTML = `<p>${ingredientLine}.&nbsp;&nbsp;&nbsp;&nbsp;${recipe.method}</p>`;
+        const text = `${ingredientLine}.&nbsp;&nbsp;&nbsp;&nbsp;${recipe.method}`;
+        recipeOverlay.innerHTML = `<p class="base-layer">${text}</p>`;
         recipeOverlay.classList.add('visible');
         detailQuestion.textContent = 'MODEL';
         detailCanvasContainer.style.pointerEvents = 'none';
         detailCanvasContainer.style.cursor = 'default';
     }
-
+ 
     function closeRecipe() {
         recipeOpen = false;
         recipeOverlay.classList.remove('visible');
@@ -187,7 +188,7 @@
         detailCanvasContainer.style.pointerEvents = 'all';
         detailCanvasContainer.style.cursor = 'grab';
     }
-
+ 
     function openDetailView(modelPath, labelText, headerLabel) {
         inDetailView = true;
         currentLabel = labelText;
@@ -200,19 +201,19 @@
         recipeOpen = false;
         recipeOverlay.classList.remove('visible');
         recipeOverlay.innerHTML = '';
-
-        detailVelX = 0;
+        detailCanvasContainer.style.pointerEvents = 'all';
+        detailCanvasContainer.style.cursor = 'grab';
         detailVelY = 0;
-
+ 
         detailCanvasContainer.innerHTML = '';
-
+ 
         const w = detailCanvasContainer.clientWidth;
         const h = detailCanvasContainer.clientHeight;
-
+ 
         detailScene = new THREE.Scene();
         detailCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
         detailCamera.position.z = 3;
-
+ 
         detailRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         detailRenderer.setSize(w, h);
         detailRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -220,7 +221,7 @@
         detailRenderer.toneMapping = THREE.ACESFilmicToneMapping;
         detailRenderer.toneMappingExposure = 1.0;
         detailCanvasContainer.appendChild(detailRenderer.domElement);
-
+ 
         const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
         detailScene.add(ambientLight);
         const light1 = new THREE.DirectionalLight(0xffffff, 0.6);
@@ -232,26 +233,26 @@
         const light3 = new THREE.DirectionalLight(0xffffff, 0.4);
         light3.position.set(0, -5, 0);
         detailScene.add(light3);
-
+ 
         loader.load(modelPath, (gltf) => {
             detailModel = gltf.scene;
-
+ 
             const box    = new THREE.Box3().setFromObject(detailModel);
             const center = box.getCenter(new THREE.Vector3());
             const size   = box.getSize(new THREE.Vector3());
             const maxDim = Math.max(size.x, size.y, size.z);
             const scale  = 1.5 / maxDim;
-
+ 
             detailModel.position.sub(center.multiplyScalar(scale));
             detailModel.scale.setScalar(scale);
             detailModel.rotation.x = Math.PI / 2;
-
+ 
             detailScene.add(detailModel);
         }, undefined, (err) => console.error(err));
-
+ 
         detailRenderer.domElement.addEventListener('mousedown', onDetailMouseDown);
         detailRenderer.domElement.addEventListener('touchstart', onDetailTouchStart, { passive: true });
-
+ 
         function animateDetail() {
             detailAnimId = requestAnimationFrame(animateDetail);
             if (!detailIsDragging && detailModel) {
@@ -266,7 +267,7 @@
         }
         animateDetail();
     }
-
+ 
     function closeDetailView() {
         inDetailView = false;
         recipeOpen = false;
@@ -287,7 +288,7 @@
         detailVelX = 0;
         detailVelY = 0;
     }
-
+ 
     detailQuestion.addEventListener('click', () => {
         if (!inDetailView) return;
         if (recipeOpen) {
@@ -296,7 +297,7 @@
             openRecipe(currentLabel);
         }
     });
-
+ 
     function onDetailMouseDown(e) {
         if (recipeOpen) return;
         detailIsDragging = true;
@@ -304,7 +305,7 @@
         detailPrevMouseY = e.clientY;
         detailVelX = 0;
         detailVelY = 0;
-
+ 
         function onMove(e) {
             const dx = e.clientX - detailPrevMouseX;
             const dy = e.clientY - detailPrevMouseY;
@@ -317,17 +318,17 @@
             detailPrevMouseX = e.clientX;
             detailPrevMouseY = e.clientY;
         }
-
+ 
         function onUp() {
             detailIsDragging = false;
             window.removeEventListener('mousemove', onMove);
             window.removeEventListener('mouseup', onUp);
         }
-
+ 
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onUp);
     }
-
+ 
     function onDetailTouchStart(e) {
         if (recipeOpen) return;
         if (e.touches.length !== 1) return;
@@ -336,7 +337,7 @@
         detailPrevMouseY = e.touches[0].clientY;
         detailVelX = 0;
         detailVelY = 0;
-
+ 
         function onMove(e) {
             if (e.touches.length !== 1) return;
             const dx = e.touches[0].clientX - detailPrevMouseX;
@@ -350,30 +351,30 @@
             detailPrevMouseX = e.touches[0].clientX;
             detailPrevMouseY = e.touches[0].clientY;
         }
-
+ 
         function onEnd() {
             detailIsDragging = false;
             window.removeEventListener('touchmove', onMove);
             window.removeEventListener('touchend', onEnd);
         }
-
+ 
         window.addEventListener('touchmove', onMove, { passive: true });
         window.addEventListener('touchend', onEnd, { passive: true });
     }
-
+ 
     backButton.addEventListener('click', closeDetailView);
-
+ 
     window.addEventListener('wheel', (e) => {
         if (inDetailView) return;
         scrollVelocity += e.deltaY * SCROLL_SENSITIVITY;
     }, { passive: true });
-
+ 
     let lastTouchY = null;
     window.addEventListener('touchstart', (e) => {
         if (inDetailView) return;
         if (e.touches.length === 1) lastTouchY = e.touches[0].clientY;
     }, { passive: true });
-
+ 
     window.addEventListener('touchmove', (e) => {
         if (inDetailView) return;
         if (e.touches.length === 1 && lastTouchY !== null) {
@@ -382,26 +383,26 @@
             lastTouchY = e.touches[0].clientY;
         }
     }, { passive: true });
-
+ 
     window.addEventListener('touchend', () => {
         if (inDetailView) return;
         lastTouchY = null;
     }, { passive: true });
-
+ 
     function createViewer(containerId, modelPath, labelText, headerLabel) {
         return new Promise((resolve) => {
             const container = document.getElementById(containerId);
             containers.push(container);
-
+ 
             const width  = container.clientWidth;
             const height = container.clientHeight;
-
+ 
             const scene  = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
             camera.position.z = CAM_DEFAULT;
-
+ 
             let camTarget = CAM_DEFAULT;
-
+ 
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(width, height);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -409,7 +410,7 @@
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.0;
             container.appendChild(renderer.domElement);
-
+ 
             const ambientLight = new THREE.AmbientLight(0xffffff, 2.5);
             scene.add(ambientLight);
             const light1 = new THREE.DirectionalLight(0xffffff, 0.6);
@@ -421,7 +422,7 @@
             const light3 = new THREE.DirectionalLight(0xffffff, 0.4);
             light3.position.set(0, -5, 0);
             scene.add(light3);
-
+ 
             let model = null;
             let isDragging = false;
             let mouseDownX = 0;
@@ -429,7 +430,7 @@
             let prevMouseX = 0;
             let dragVelocity = 0;
             let autoSpin = true;
-
+ 
             renderer.domElement.addEventListener('mousedown', (e) => {
                 isDragging = false;
                 globalDragging = true;
@@ -443,7 +444,7 @@
                 breadLabel.textContent = labelText;
                 breadLabel.classList.add('visible');
             });
-
+ 
             window.addEventListener('mousemove', (e) => {
                 if (!globalDragging || draggedLabel !== labelText || !model) return;
                 const dx = e.clientX - mouseDownX;
@@ -454,14 +455,14 @@
                 dragVelocity = delta * 0.01;
                 prevMouseX = e.clientX;
             });
-
+ 
             window.addEventListener('mouseup', (e) => {
                 if (!globalDragging || draggedLabel !== labelText) return;
                 globalDragging = false;
                 draggedLabel = null;
                 container.style.cursor = 'grab';
                 setTimeout(() => { autoSpin = true; }, 800);
-
+ 
                 if (!isDragging) {
                     openDetailView(modelPath, labelText, headerLabel);
                 } else {
@@ -469,7 +470,7 @@
                 }
                 isDragging = false;
             });
-
+ 
             renderer.domElement.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 1) {
                     isDragging = false;
@@ -484,7 +485,7 @@
                     breadLabel.classList.add('visible');
                 }
             });
-
+ 
             window.addEventListener('touchmove', (e) => {
                 if (!globalDragging || draggedLabel !== labelText || !model) return;
                 const dx = e.touches[0].clientX - mouseDownX;
@@ -495,13 +496,13 @@
                 dragVelocity = delta * 0.01;
                 prevMouseX = e.touches[0].clientX;
             });
-
+ 
             window.addEventListener('touchend', () => {
                 if (!globalDragging || draggedLabel !== labelText) return;
                 globalDragging = false;
                 draggedLabel = null;
                 setTimeout(() => { autoSpin = true; }, 800);
-
+ 
                 if (!isDragging) {
                     openDetailView(modelPath, labelText, headerLabel);
                 } else {
@@ -509,7 +510,7 @@
                 }
                 isDragging = false;
             });
-
+ 
             container.addEventListener('mouseenter', () => {
                 camTarget = CAM_HOVER;
                 container.style.cursor = 'grab';
@@ -518,7 +519,7 @@
                     breadLabel.classList.add('visible');
                 }
             });
-
+ 
             container.addEventListener('mouseleave', () => {
                 camTarget = CAM_DEFAULT;
                 container.style.cursor = 'default';
@@ -526,22 +527,22 @@
                     breadLabel.classList.remove('visible');
                 }
             });
-
+ 
             loader.load(
                 modelPath,
                 function (gltf) {
                     model = gltf.scene;
-
+ 
                     const box    = new THREE.Box3().setFromObject(model);
                     const center = box.getCenter(new THREE.Vector3());
                     const size   = box.getSize(new THREE.Vector3());
                     const maxDim = Math.max(size.x, size.y, size.z);
                     const scale  = 1.5 / maxDim;
-
+ 
                     model.position.sub(center.multiplyScalar(scale));
                     model.scale.setScalar(scale);
                     model.rotation.x = Math.PI / 2;
-
+ 
                     scene.add(model);
                     resolve();
                 },
@@ -551,7 +552,7 @@
                     resolve();
                 }
             );
-
+ 
             window.addEventListener("resize", () => {
                 const w = container.clientWidth;
                 const h = container.clientHeight;
@@ -559,7 +560,7 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(w, h);
             });
-
+ 
             function animate() {
                 requestAnimationFrame(animate);
                 camera.position.z += (camTarget - camera.position.z) * CAM_LERP;
@@ -577,7 +578,7 @@
             animate();
         });
     }
-
+ 
     async function loadSequential() {
         updateContainerSizes();
         updateContainerPositions();
@@ -585,9 +586,9 @@
             await createViewer(`container-${i}`, models[i], labels[i], headerLabels[i]);
         }
     }
-
+ 
     loadSequential();
-
+ 
     function orbitLoop() {
         requestAnimationFrame(orbitLoop);
         if (!inDetailView) {
@@ -598,7 +599,7 @@
         }
     }
     orbitLoop();
-
+ 
     window.addEventListener('resize', () => {
         updateContainerSizes();
         updateContainerPositions();

@@ -2,23 +2,23 @@
   font-family: FindReplace-Medium;
   src: url(font/TRIALFindReplace-Medium.otf);
 }
-
+ 
 @font-face {
   font-family: FindReplace-Bold;
   src: url(font/TRIALFindReplace-Bold.otf);
 }
-
+ 
 @font-face {
   font-family: FindReplace-Black;
   src: url(font/TRIALFindReplace-Black.otf);
 }
-
+ 
 body {
   background-color: rgb(255, 247, 235);
   margin: 0;
   overflow: hidden;
 }
-
+ 
 p {
   font-family: FindReplace-Bold;
   font-size: 2vw;
@@ -36,7 +36,7 @@ p {
   z-index: 200;
   pointer-events: none;
 }
-
+ 
 #models-container {
   position: fixed;
   top: 0;
@@ -45,23 +45,23 @@ p {
   height: 100vh;
   pointer-events: none;
 }
-
+ 
 .model-canvas-wrapper {
   position: absolute;
   transform: translate(-50%, -50%);
   pointer-events: all;
 }
-
+ 
 .model-canvas-wrapper canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
 }
-
+ 
 .model-canvas-wrapper:hover {
   cursor: pointer;
 }
-
+ 
 #bread-label {
   font-family: FindReplace-Bold;
   position: fixed;
@@ -75,11 +75,11 @@ p {
   z-index: 20;
   opacity: 0;
 }
-
+ 
 #bread-label.visible {
   opacity: 1;
 }
-
+ 
 #detail-view {
   position: fixed;
   top: 0;
@@ -90,11 +90,11 @@ p {
   z-index: 100;
   background-color: rgb(255, 247, 235);
 }
-
+ 
 #detail-view.active {
   display: block;
 }
-
+ 
 #detail-canvas-container {
   position: absolute;
   top: 44%;
@@ -103,18 +103,18 @@ p {
   width: 100vmin;
   height: 100vmin;
 }
-
+ 
 #detail-canvas-container canvas {
   width: 100% !important;
   height: 100% !important;
   display: block;
   cursor: grab;
 }
-
+ 
 #detail-canvas-container canvas:active {
   cursor: grabbing;
 }
-
+ 
 #recipe-overlay {
   position: absolute;
   top: 50%;
@@ -129,28 +129,35 @@ p {
   pointer-events: none;
   opacity: 0;
   z-index: 105;
-  overflow-y: auto;
+  overflow-y: visible;
+  isolation: auto;
 }
-
+ 
 #recipe-overlay.visible {
   opacity: 1;
 }
-
+ 
 #recipe-overlay p {
   font-family: FindReplace-Bold;
   font-size: 2vw;
   letter-spacing: -0.1vw;
-  position: relative;
   width: 100%;
   margin: 0;
   padding: 0;
   text-align: center;
   text-align-last: center;
   line-height: 1.7;
-  mix-blend-mode: multiply;
-  color: rgb(26, 16, 2);
 }
-
+ 
+#recipe-overlay p.base-layer {
+  color: rgb(26, 16, 2);
+  position: relative;
+}
+ 
+#recipe-overlay p.blend-layer {
+  display: none;
+}
+ 
 #back-button {
   font-family: FindReplace-Bold;
   position: fixed;
@@ -166,15 +173,15 @@ p {
   z-index: 110;
   display: none;
 }
-
+ 
 #back-button:hover {
   font-family: FindReplace-Black;
 }
-
+ 
 #back-button.active {
   display: block;
 }
-
+ 
 #detail-label {
   font-family: FindReplace-Bold;
   position: fixed;
@@ -191,11 +198,11 @@ p {
   padding-bottom: calc(0.5em + 2vw + 0.5em);
   white-space: nowrap;
 }
-
+ 
 #detail-label.active {
   display: block;
 }
-
+ 
 #detail-question {
   font-family: FindReplace-Bold;
   position: fixed;
@@ -212,38 +219,38 @@ p {
   padding: 0.5em 1em;
   white-space: nowrap;
 }
-
+ 
 #detail-question:hover {
   font-family: FindReplace-Black;
 }
-
+ 
 #detail-question.active {
   display: block;
 }
-
+ 
 @media (max-width: 768px) {
   p,
   #bread-label {
     font-size: 5vw;
     letter-spacing: -0.25vw;
   }
-
+ 
   #back-button,
   #detail-label,
   #detail-question {
     font-size: 4vw;
     letter-spacing: -0.2vw;
   }
-
+ 
   #detail-canvas-container {
     width: 110vmin;
     height: 110vmin;
   }
-
+ 
   #recipe-overlay {
     width: 70%;
   }
-
+ 
   #recipe-overlay p {
     font-size: 4vw;
     letter-spacing: -0.2vw;
