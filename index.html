@@ -93,13 +93,19 @@
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
 
-    function getRadius() {
-        return window.innerWidth * 0.18;
+function getRadius() {
+    if (window.innerWidth <= 768) {
+        return window.innerWidth * 0.35;
     }
+    return window.innerWidth * 0.18;
+}
 
-    function getContainerSize() {
-        return window.innerWidth * 0.19;
+function getContainerSize() {
+    if (window.innerWidth <= 768) {
+        return window.innerWidth * 0.35;
     }
+    return window.innerWidth * 0.19;
+}
 
     function getCirclePositions(angle) {
         const cx = window.innerWidth / 2;
