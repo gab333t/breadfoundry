@@ -97,11 +97,11 @@ p {
 
 #detail-canvas-container {
   position: absolute;
-  top: 47%;
+  top: 44%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 82vmin;
-  height: 82vmin;
+  width: 100vmin;
+  height: 100vmin;
 }
 
 #detail-canvas-container canvas {
@@ -113,6 +113,43 @@ p {
 
 #detail-canvas-container canvas:active {
   cursor: grabbing;
+}
+
+#recipe-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  max-height: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 105;
+  overflow-y: auto;
+}
+
+#recipe-overlay.visible {
+  opacity: 1;
+}
+
+#recipe-overlay p {
+  font-family: FindReplace-Bold;
+  font-size: 2vw;
+  letter-spacing: -0.1vw;
+  color: rgb(26, 16, 2);
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  text-align-last: center;
+  line-height: 1.7;
+  mix-blend-mode: multiply;
+  color: white;
 }
 
 #back-button {
@@ -187,7 +224,11 @@ p {
 
 @media (max-width: 768px) {
   p,
-  #bread-label,
+  #bread-label {
+    font-size: 5vw;
+    letter-spacing: -0.25vw;
+  }
+
   #back-button,
   #detail-label,
   #detail-question {
@@ -196,7 +237,16 @@ p {
   }
 
   #detail-canvas-container {
-    width: 95vmin;
-    height: 95vmin;
+    width: 110vmin;
+    height: 110vmin;
+  }
+
+  #recipe-overlay {
+    width: 85%;
+  }
+
+  #recipe-overlay p {
+    font-size: 4vw;
+    letter-spacing: -0.2vw;
   }
 }

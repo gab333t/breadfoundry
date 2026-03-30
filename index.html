@@ -20,6 +20,7 @@
     </div>
     <div id="detail-view">
         <div id="detail-canvas-container"></div>
+        <div id="recipe-overlay"></div>
     </div>
     <div id="detail-label"></div>
     <div id="detail-question">RECIPE</div>
@@ -57,6 +58,33 @@
         '06.  RYE',
     ];
 
+    const recipes = {
+        'MARBLE': {
+            ingredients: ['2.25 TSP ACTIVE DRY YEAST', '1.5 CUPS WARM WATER', '3.5 CUPS BREAD FLOUR', '1.5 TSP SALT', '2 TBSP COCOA POWDER', '2 TBSP SUGAR'],
+            method: 'DIVIDE DOUGH IN HALF. MIX COCOA INTO ONE HALF. PROOF BOTH SEPARATELY FOR 1 HOUR. LAYER AND TWIST TOGETHER, THEN SHAPE INTO A LOAF. PROOF 45 MIN. BAKE AT 375F FOR 35-40 MIN.',
+        },
+        'MULTIGRAIN': {
+            ingredients: ['2.25 TSP YEAST', '1.25 CUPS WARM WATER', '2 CUPS BREAD FLOUR', '1 CUP WHOLE WHEAT FLOUR', '0.5 CUP ROLLED OATS', '2 TBSP SUNFLOWER SEEDS', '1 TSP SALT', '2 TBSP HONEY'],
+            method: 'COMBINE FLOURS, OATS, AND SEEDS. DISSOLVE YEAST IN WATER WITH HONEY. MIX AND KNEAD 8 MIN. PROOF 1 HOUR, SHAPE, PROOF 45 MIN. BAKE AT 375F FOR 30-35 MIN.',
+        },
+        'PUMPERNICKEL': {
+            ingredients: ['2.25 TSP YEAST', '1.25 CUPS WARM WATER', '1.5 CUPS RYE FLOUR', '1.5 CUPS BREAD FLOUR', '3 TBSP COCOA POWDER', '2 TBSP MOLASSES', '1 TSP CARAWAY SEEDS', '1.5 TSP SALT'],
+            method: 'MIX FLOURS, COCOA, AND CARAWAY. COMBINE YEAST, WATER, AND MOLASSES. KNEAD 10 MIN — DOUGH WILL BE DENSE. PROOF 1.5 HOURS, SHAPE, PROOF 1 HOUR. BAKE AT 350F FOR 45 MIN.',
+        },
+        'WHITE': {
+            ingredients: ['2.25 TSP ACTIVE DRY YEAST', '1.5 CUPS WARM WATER', '4 CUPS ALL-PURPOSE FLOUR', '1.5 TSP SALT', '1 TBSP SUGAR', '2 TBSP UNSALTED BUTTER'],
+            method: 'PROOF YEAST IN WARM WATER WITH SUGAR. ADD FLOUR, SALT, AND SOFTENED BUTTER. KNEAD 8-10 MIN. PROOF 1 HOUR, PUNCH DOWN, SHAPE. PROOF 45 MIN. BAKE AT 375F FOR 30 MIN.',
+        },
+        'PITA': {
+            ingredients: ['2.25 TSP YEAST', '1 CUP WARM WATER', '2.5 CUPS ALL-PURPOSE FLOUR', '1 TSP SALT', '1 TSP SUGAR', '2 TBSP OLIVE OIL'],
+            method: 'MIX YEAST AND WATER WITH SUGAR. ADD FLOUR, SALT, AND OIL. KNEAD 6 MIN. PROOF 1 HOUR. DIVIDE INTO 8 BALLS, ROLL FLAT. REST 20 MIN. BAKE AT 500F FOR 4-5 MIN UNTIL PUFFED.',
+        },
+        'RYE': {
+            ingredients: ['2.25 TSP YEAST', '1.25 CUPS WARM WATER', '2 CUPS RYE FLOUR', '1 CUP BREAD FLOUR', '1.5 TSP SALT', '1 TBSP CARAWAY SEEDS', '2 TBSP MOLASSES'],
+            method: 'COMBINE FLOURS AND CARAWAY. DISSOLVE YEAST IN WATER WITH MOLASSES. KNEAD 8 MIN — DOUGH IS STICKY, RESIST ADDING FLOUR. PROOF 1.5 HOURS, SHAPE, PROOF 1 HOUR. BAKE AT 375F FOR 35 MIN.',
+        },
+    };
+
     const NUM = models.length;
     const CAM_DEFAULT = 3;
     const CAM_HOVER   = 2.6;
@@ -76,10 +104,13 @@
     const detailLabel = document.getElementById('detail-label');
     const detailQuestion = document.getElementById('detail-question');
     const backButton = document.getElementById('back-button');
+    const recipeOverlay = document.getElementById('recipe-overlay');
 
     let globalDragging = false;
     let draggedLabel = null;
     let inDetailView = false;
+    let recipeOpen = false;
+    let currentLabel = '';
 
     let detailScene, detailCamera, detailRenderer, detailModel, detailAnimId;
     let detailIsDragging = false;
@@ -93,19 +124,19 @@
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
 
-function getRadius() {
-    if (window.innerWidth <= 768) {
-        return window.innerWidth * 0.35;
+    function getRadius() {
+        if (window.innerWidth <= 768) {
+            return window.innerWidth * 0.35;
+        }
+        return window.innerWidth * 0.18;
     }
-    return window.innerWidth * 0.18;
-}
 
-function getContainerSize() {
-    if (window.innerWidth <= 768) {
-        return window.innerWidth * 0.35;
+    function getContainerSize() {
+        if (window.innerWidth <= 768) {
+            return window.innerWidth * 0.35;
+        }
+        return window.innerWidth * 0.19;
     }
-    return window.innerWidth * 0.19;
-}
 
     function getCirclePositions(angle) {
         const cx = window.innerWidth / 2;
@@ -136,13 +167,39 @@ function getContainerSize() {
         });
     }
 
+    function openRecipe(labelText) {
+        const recipe = recipes[labelText];
+        if (!recipe) return;
+        recipeOpen = true;
+        const ingredientLine = recipe.ingredients.join(',  ');
+        recipeOverlay.innerHTML = `<p>${ingredientLine}.&nbsp;&nbsp;&nbsp;&nbsp;${recipe.method}</p>`;
+        recipeOverlay.classList.add('visible');
+        detailQuestion.textContent = 'MODEL';
+        detailCanvasContainer.style.pointerEvents = 'none';
+        detailCanvasContainer.style.cursor = 'default';
+    }
+
+    function closeRecipe() {
+        recipeOpen = false;
+        recipeOverlay.classList.remove('visible');
+        recipeOverlay.innerHTML = '';
+        detailQuestion.textContent = 'RECIPE';
+        detailCanvasContainer.style.pointerEvents = 'all';
+        detailCanvasContainer.style.cursor = 'grab';
+    }
+
     function openDetailView(modelPath, labelText, headerLabel) {
         inDetailView = true;
+        currentLabel = labelText;
         detailView.classList.add('active');
         backButton.classList.add('active');
         detailQuestion.classList.add('active');
+        detailQuestion.textContent = 'RECIPE';
         headerText.textContent = headerLabel;
         breadLabel.classList.remove('visible');
+        recipeOpen = false;
+        recipeOverlay.classList.remove('visible');
+        recipeOverlay.innerHTML = '';
 
         detailVelX = 0;
         detailVelY = 0;
@@ -212,9 +269,14 @@ function getContainerSize() {
 
     function closeDetailView() {
         inDetailView = false;
+        recipeOpen = false;
+        currentLabel = '';
         detailView.classList.remove('active');
         backButton.classList.remove('active');
         detailQuestion.classList.remove('active');
+        detailQuestion.textContent = 'RECIPE';
+        recipeOverlay.classList.remove('visible');
+        recipeOverlay.innerHTML = '';
         headerText.textContent = 'BREAD FOUNDRY';
         cancelAnimationFrame(detailAnimId);
         if (detailRenderer) {
@@ -226,7 +288,17 @@ function getContainerSize() {
         detailVelY = 0;
     }
 
+    detailQuestion.addEventListener('click', () => {
+        if (!inDetailView) return;
+        if (recipeOpen) {
+            closeRecipe();
+        } else {
+            openRecipe(currentLabel);
+        }
+    });
+
     function onDetailMouseDown(e) {
+        if (recipeOpen) return;
         detailIsDragging = true;
         detailPrevMouseX = e.clientX;
         detailPrevMouseY = e.clientY;
@@ -257,6 +329,7 @@ function getContainerSize() {
     }
 
     function onDetailTouchStart(e) {
+        if (recipeOpen) return;
         if (e.touches.length !== 1) return;
         detailIsDragging = true;
         detailPrevMouseX = e.touches[0].clientX;
