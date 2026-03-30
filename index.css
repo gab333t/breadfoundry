@@ -120,7 +120,7 @@ p {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60%;
+  width: 40%;
   max-height: 70%;
   display: flex;
   align-items: center;
@@ -140,7 +140,6 @@ p {
   font-family: FindReplace-Bold;
   font-size: 2vw;
   letter-spacing: -0.1vw;
-  color: rgb(26, 16, 2);
   position: relative;
   width: 100%;
   margin: 0;
@@ -149,7 +148,7 @@ p {
   text-align-last: center;
   line-height: 1.7;
   mix-blend-mode: multiply;
-  color: white;
+  color: rgb(26, 16, 2);
 }
 
 #back-button {
@@ -242,7 +241,7 @@ p {
   }
 
   #recipe-overlay {
-    width: 85%;
+    width: 70%;
   }
 
   #recipe-overlay p {
